@@ -8,7 +8,7 @@ import zipfile
 import json
 import re
 import collections
-
+import sys
 
 class BoundKeysCommand(sublime_plugin.TextCommand):
     def removeComments(self, text):
@@ -233,7 +233,7 @@ and overrides.
                             continue
                         zip = zipfile.ZipFile(fullPath, "r")
                         jsonObj = self.jsonify(
-                            str(zip.open(fileZipPath, "r").read(), "utf-8")
+                            str(zip.open(fileZipPath, "r").read(), sys.getfilesystemencoding())
                         )
                         zip.close()
                     except IOError:
@@ -301,12 +301,13 @@ and overrides.
                                 jsonObj = self.jsonify(
                                     str(zip.open(zipName, "r").read(), "utf-8")
                                 )
-                                userKeys[lastPath] = {}
-                                userKeys[lastPath]["name"] = name
-                                userKeys[lastPath]["loc_key"] = pathName
-                                userKeys[lastPath]["object"] = jsonObj
-                                userKeys[lastPath]["path"] = fullPath
-                                userKeys[lastPath]["zipName"] = zipName
+                                if jsonObj:
+                                    userKeys[lastPath] = {}
+                                    userKeys[lastPath]["name"] = name
+                                    userKeys[lastPath]["loc_key"] = pathName
+                                    userKeys[lastPath]["object"] = jsonObj
+                                    userKeys[lastPath]["path"] = fullPath
+                                    userKeys[lastPath]["zipName"] = zipName
                             zip.close()
                         except IOError:
                             print("File not found: %s" % fullPath)
@@ -333,7 +334,7 @@ and overrides.
                         if lastPath in subKeys or lastPath in userKeys:
                             continue
                         try:
-                            jsonObj = self.jsonify(open(filePath, "r").read())
+                            jsonObj = self.jsonify(open(filePath, "r", encoding='utf-8').read())
                         except IOError:
                             errorLoading.append(filePath)
                         if jsonObj:
